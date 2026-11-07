@@ -1,0 +1,26 @@
+# Cria um release com o AllyHub.exe sempre que fazes push de uma tag "vX.Y.Z".
+# O AllyHub no Ally ve o release novo e atualiza-se sozinho.
+name: release
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Compilar
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}".TrimStart('v')
+          dotnet publish AllyHub.csproj -c Release -o publicar -p:Version=$v
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: publicar/AllyHub.exe

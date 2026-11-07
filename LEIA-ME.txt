@@ -1,0 +1,66 @@
+ALLYHUB v1.0 - biblioteca de jogos + perfis de desempenho para o ROG Ally
+==========================================================================
+
+NOVIDADES
+- Ecra de arranque animado (podes trocar por uma imagem tua: poe um splash.png
+  ao lado do AllyHub.exe).
+- Interface nova: o fundo mostra a arte do jogo selecionado, carrossel de capas
+  que crescem e brilham, medidor de TDP, relogio e bateria.
+- Botao "Arranca com o Windows": abre a AllyHub sozinha quando ligas o Ally.
+- Atualizacoes automaticas a partir do GitHub.
+
+
+PASSO 1 - POR O CODIGO NO GITHUB (uma vez so)
+---------------------------------------------
+1. Cria um repositorio PUBLICO chamado AllyHub no github.com
+   (tem de ser publico para o Ally conseguir ver os releases sem password).
+2. Abre System.cs e muda esta linha para o teu utilizador:
+       public const string Repo = "bba219187-droid/AllyHub";
+3. Na pasta AllyHub, num terminal:
+       git init
+       git add .
+       git commit -m "AllyHub v1.0.0"
+       git branch -M main
+       git remote add origin https://github.com/bba219187-droid/AllyHub.git
+       git push -u origin main
+       git tag v1.0.0
+       git push origin v1.0.0
+4. No GitHub, abre o separador "Actions" e espera uns 3 minutos.
+   O AllyHub.exe aparece em "Releases". O GitHub compila-o por ti, por isso
+   ja nao precisas do .NET instalado.
+
+
+PASSO 2 - INSTALAR NO ALLY (uma vez so)
+---------------------------------------
+1. Cria uma pasta, por exemplo C:\AllyHub, e descarrega para la o AllyHub.exe
+   do release.
+2. Descarrega o ZIP para Windows do RyzenAdj
+   (https://github.com/FlyGoat/RyzenAdj/releases) e copia TODOS os ficheiros
+   para a mesma pasta. Sem ele, a app funciona so como biblioteca.
+   Atencao: o driver do RyzenAdj pode ser marcado pelo Windows Defender ou
+   por anti-cheats.
+3. Abre o AllyHub.exe, aceita o pedido de administrador e carrega em
+   "Arranca com o Windows" no canto superior direito.
+
+
+COMO LANCAR UMA ATUALIZACAO
+---------------------------
+Mudas o codigo e depois:
+    git commit -am "o que mudaste"
+    git push
+    git tag v1.0.1          (o numero tem de ser sempre maior)
+    git push origin v1.0.1
+Da proxima vez que o Ally abrir a AllyHub, ela descarrega a versao nova,
+substitui-se e reinicia sozinha.
+
+
+CONTROLOS
+---------
+Comando:  esquerda/direita = jogo     A = jogar
+          cima/baixo ou Y/X = +/- 1 W  LB/RB = perfil
+          B = atualizar a lista
+Ecra:     toca num jogo para o escolher e toca outra vez para jogar.
+Teclado:  setas, Enter, PgUp/PgDn, F5, Esc para sair.
+
+Os perfis e o TDP de cada jogo ficam em %AppData%\AllyHub\config.json
+(podes edita-lo para criar ou mudar perfis). 30 W so ligado a corrente.
