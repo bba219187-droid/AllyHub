@@ -19,14 +19,20 @@ public static class Updater
     public static bool IsNewer(string tag, Version current) =>
         Version.TryParse(tag.TrimStart('v', 'V'), out var latest) && latest > new Version(current.Major, current.Minor, Math.Max(current.Build, 0));
 
-    /// Se houver versao nova: descarrega, troca o .exe e devolve a versao. Senao devolve null.
-    public static async Task<string?> CheckAndApply()
+    /// Se houver versao nova: descarrega (com progresso 0-100), troca o .exe e devolve a versao.
+    /// Senao devolve null. Lanca excecao se o download falhar.
+    public static async Task<string?> CheckAndApply(IProgress<int>? progress = null)
     {
         if (Repo.StartsWith("O-TEU")) return null;
-        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+        // sem timeout global: o .exe tem ~70 MB; cada fase tem o seu limite
+        using var http = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
         http.DefaultRequestHeaders.UserAgent.ParseAdd("AllyHub-Updater");
 
-        using var doc = JsonDocument.Parse(await http.GetStringAsync($"https://api.github.com/repos/{Repo}/releases/latest"));
+        string json;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15)))
+            json = await http.GetStringAsync($"https://api.github.com/repos/{Repo}/releases/latest", cts.Token);
+
+        using var doc = JsonDocument.Parse(json);
         var tag = doc.RootElement.GetProperty("tag_name").GetString() ?? "";
         if (!IsNewer(tag, Current)) return null;
 
@@ -38,7 +44,26 @@ public static class Updater
 
         var exe = Environment.ProcessPath!;
         var tmp = exe + ".new";
-        await File.WriteAllBytesAsync(tmp, await http.GetByteArrayAsync(url));
+        using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(15)))
+        using (var resp = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cts.Token))
+        {
+            resp.EnsureSuccessStatusCode();
+            var total = resp.Content.Headers.ContentLength ?? 0;
+            await using var src = await resp.Content.ReadAsStreamAsync(cts.Token);
+            await using var dst = File.Create(tmp);
+            var buf = new byte[1 << 16];
+            long done = 0;
+            int n, last = -1;
+            while ((n = await src.ReadAsync(buf, cts.Token)) > 0)
+            {
+                await dst.WriteAsync(buf.AsMemory(0, n), cts.Token);
+                done += n;
+                var pct = total > 0 ? (int)(done * 100 / total) : 0;
+                if (pct != last) { progress?.Report(pct); last = pct; }
+            }
+            if (total > 0 && done != total) throw new IOException("download incompleto");
+        }
+
         // O Windows deixa renomear um .exe em execucao; o antigo e apagado no proximo arranque
         File.Move(exe, exe + ".old", true);
         File.Move(tmp, exe);

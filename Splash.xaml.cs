@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -53,7 +54,8 @@ public partial class Splash : Window
         try
         {
             Msg.Text = "A procurar atualizações…";
-            var updated = await Updater.CheckAndApply();
+            var progress = new Progress<int>(p => Msg.Text = $"A transferir atualização… {p}%");
+            var updated = await Updater.CheckAndApply(progress);
             if (updated != null)
             {
                 Msg.Text = $"Atualizado para v{updated} — a reiniciar…";
@@ -63,7 +65,15 @@ public partial class Splash : Window
                 return;
             }
         }
-        catch { /* sem internet ou GitHub em baixo: segue com a versao atual */ }
+        catch (Exception e)
+        {
+            // sem internet / GitHub em baixo: avisa e segue com a versao atual
+            try { File.Delete(Environment.ProcessPath + ".new"); } catch { }
+            Msg.Text = e is HttpRequestException or TaskCanceledException
+                ? "Sem ligação para procurar atualizações"
+                : $"Atualização falhou: {e.Message}";
+            await Task.Delay(1500);
+        }
 
         Msg.Text = "A carregar a biblioteca…";
         var games = await scan;
