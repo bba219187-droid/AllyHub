@@ -30,6 +30,7 @@ public partial class MainWindow : Window
     int _watts;
     bool _booster, _heroFlip, _launchCancel, _checking, _sysLoaded, _updBusy;
     QuickMenu? _quick;
+    TestWindow? _tests;
 
     // jogo a correr
     Game? _playing;
@@ -62,9 +63,16 @@ public partial class MainWindow : Window
         TdpState.Text = Tdp.Available ? "Aplicado ao abrir o jogo" : "⚠ ryzenadj.exe em falta — TDP desligado";
         Status.Text = "v" + Updater.CurrentText;
         SetFilter("Todos");
+        if (_cfg.FanPreset != 0) { var fan = _cfg.FanPreset; Task.Run(() => Fans.Apply(fan)); }
 
         Every(16, PollPad);                       // comando ~60 Hz
-        Every(15000, () => { if (_playing != null) ApplyNow(); });  // o Armoury Crate repoe o TDP dele
+        Every(15000, () =>
+        {
+            if (_playing == null) return;
+            ApplyNow();                                           // o Armoury Crate repoe o TDP dele
+            var fan = _cfg.FanPreset;
+            if (fan != 0) Task.Run(() => Fans.Apply(fan));        // e a curva das ventoinhas
+        });
         Every(10000, TrackTick);                  // tempo de jogo
         Every(5000, UpdateClock);
         UpdateClock();
@@ -74,7 +82,12 @@ public partial class MainWindow : Window
 
         PreviewKeyDown += OnKey;
         Activated += (_, _) => { if (_mode == Mode.Library) _selected?.Focus(); };
-        Closed += (_, _) => { if (_booster) Tdp.BestPerformance(false); Application.Current.Shutdown(); };
+        Closed += (_, _) =>
+        {
+            if (_booster) Tdp.BestPerformance(false);
+            if (_cfg.FanPreset != 0) Fans.Apply(0);   // ao sair, devolve as ventoinhas a ASUS
+            Application.Current.Shutdown();
+        };
     }
 
     void Every(int ms, Action a)
@@ -306,6 +319,17 @@ public partial class MainWindow : Window
     public int EffectiveWatts => _booster ? Tdp.BoosterWatts : _watts;
     public string ProfileLabel => _booster ? "BOOSTER" : _cfg.Profiles.FirstOrDefault(p => p.Value == _watts).Key ?? "Personalizado";
     public string? PlayingName => _playing?.Name;
+    public string FanName => Fans.Presets[Math.Clamp(_cfg.FanPreset, 0, Fans.Presets.Length - 1)].Name;
+
+    public void CycleFan(int step)
+    {
+        _cfg.FanPreset = (_cfg.FanPreset + step + Fans.Presets.Length) % Fans.Presets.Length;
+        _cfg.Save();
+        var fan = _cfg.FanPreset;
+        Task.Run(() => Fans.Apply(fan));
+        Sfx.Move();
+        if (_mode == Mode.System) FillSystem();
+    }
     public long SessionSeconds => _session;
 
     void SetWatts(int w)
@@ -626,11 +650,17 @@ public partial class MainWindow : Window
     {
         SysVersion.Text = $"AllyHub v{Updater.CurrentText}";
         SysTdp.Text = Tdp.Available ? "RyzenAdj: instalado ✓" : "RyzenAdj: em falta (TDP desligado)";
+        BtnFans.Content = $"🌀  Ventoinhas: {FanName}";
         BtnTheme.Content = $"🎨  Cor: {ThemeNames[Math.Max(0, Array.IndexOf(App.Themes, _cfg.Accent))]}";
         BtnSounds.Content = _cfg.Sounds ? "♪  Sons: SIM" : "♪  Sons: NÃO";
         BtnAuto.Content = "▶  Arranca com o Windows: …";
         var auto = await Task.Run(() => AutoStart.Enabled);
         BtnAuto.Content = auto ? "▶  Arranca com o Windows: SIM" : "▶  Arranca com o Windows: NÃO";
+
+        var fansOk = await Task.Run(() => Fans.Available);
+        (int? cpu, int? gpu) rpms = fansOk ? await Task.Run(Fans.Rpm) : (null, null);
+        var rpm = rpms.cpu;
+        SysFans.Text = fansOk ? $"Ventoinhas: {(rpm is int r ? $"{r} RPM" : "a funcionar")} · perfil {FanName}" : "Ventoinhas: driver ASUS não encontrado";
 
         if (_sysLoaded) return;
         _sysLoaded = true;
@@ -708,6 +738,19 @@ public partial class MainWindow : Window
 
     void System_Click(object s, RoutedEventArgs e) => OpenPanel(Mode.System);
 
+    void Fans_Click(object s, RoutedEventArgs e) => CycleFan(+1);
+
+    void Tests_Click(object s, RoutedEventArgs e) => OpenTests();
+
+    void OpenTests()
+    {
+        if (_tests?.IsVisible == true) { _tests.Activate(); return; }
+        _tests = new TestWindow { Owner = this };
+        _tests.Closed += (_, _) => { _tests = null; Activate(); };
+        _tests.Show();
+        _tests.Activate();
+    }
+
     // =====================================================================
     // menu rapido
     // =====================================================================
@@ -739,6 +782,7 @@ public partial class MainWindow : Window
     void PollPad()
     {
         var b = _pad.Poll();
+        if (_tests?.IsVisible == true) { if (_tests.IsActive) _tests.Tick(b, _pad); return; }
         if (_quick?.IsVisible == true) { _quick.OnPad(b); return; }
         if (b != 0 && _pad.Held.HasFlag(Btn.View) && _pad.Held.HasFlag(Btn.Menu) && !IsActive) { ToggleQuick(); return; }
         if (IsActive && b != 0) OnPad(b);
@@ -786,6 +830,12 @@ public partial class MainWindow : Window
         {
             Button first = _mode switch { Mode.Details => BtnPlay, Mode.System => BtnCheckUpdates, _ => BtnTermsNo };
             first.Focus();
+            return;
+        }
+
+        if (cur == BtnFans && (b.HasFlag(Btn.Left) || b.HasFlag(Btn.Right)))
+        {
+            CycleFan(b.HasFlag(Btn.Right) ? +1 : -1);
             return;
         }
 
@@ -840,6 +890,7 @@ public partial class MainWindow : Window
             case Key.D: if (_selected != null) OpenPanel(Mode.Details); break;
             case Key.S: OpenPanel(Mode.System); break;
             case Key.B: ToggleBooster(); break;
+            case Key.T: OpenTests(); break;
             case Key.F5: Reload(); break;
             case Key.Escape: Close(); break;
             default: e.Handled = false; break;

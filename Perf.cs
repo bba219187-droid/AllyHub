@@ -37,6 +37,7 @@ public class Config
     public List<ManualGame> Manual { get; set; } = new();
     public string Accent { get; set; } = "#FF1F3D";
     public bool Sounds { get; set; } = true;
+    public int FanPreset { get; set; }          // indice em Fans.Presets (0 = automatico da ASUS)
     public bool BoosterAccepted { get; set; }
     public DateTime? BoosterAcceptedAt { get; set; }
 

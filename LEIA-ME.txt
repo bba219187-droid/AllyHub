@@ -50,6 +50,17 @@ Ecra:        toca num jogo para o escolher e toca outra vez para jogar.
 Teclado:     setas, Enter, Tab (filtro), F (favorito), D (detalhes),
              S (sistema), B (booster), F5, Esc.
 
+NOVO NA v1.2
+------------
+- Controlo das ventoinhas (Sistema ou menu rapido): Automatico (ASUS),
+  Silencioso, Equilibrado, Desempenho, Maximo. Em todos os perfis a
+  ventoinha vai a 100% quando o CPU passa dos 90 C. Ao fechar a AllyHub
+  as ventoinhas voltam ao automatico da ASUS.
+- Modo de testes (Sistema ou tecla T): comando, vibracao, cores do ecra,
+  ecra tatil, colunas, ventoinhas, stress de 60 s com temperaturas,
+  saude da bateria, memoria e armazenamento.
+- Atualizador corrigido: mostra a percentagem do download.
+
 NOVO NA v1.1
 ------------
 - Ecra "A abrir" por cima da Steam ate a janela do jogo aparecer.

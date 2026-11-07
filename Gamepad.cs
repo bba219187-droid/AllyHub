@@ -16,9 +16,25 @@ public enum Btn : ushort
 public class Gamepad
 {
     [StructLayout(LayoutKind.Sequential)]
-    struct State { public uint Packet; public ushort Buttons; public byte LT, RT; public short LX, LY, RX, RY; }
+    public struct State { public uint Packet; public ushort Buttons; public byte LT, RT; public short LX, LY, RX, RY; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct Vibration { public ushort Left, Right; }
 
     [DllImport("xinput1_4.dll")] static extern int XInputGetState(int user, out State state);
+    [DllImport("xinput1_4.dll")] static extern int XInputSetState(int user, ref Vibration v);
+
+    /// Ultimo estado lido (sticks, gatilhos, botoes incluindo L3/R3) e indice do comando.
+    public State Raw { get; private set; }
+    public int User { get; private set; } = -1;
+
+    /// Vibracao 0..1 em cada motor (esquerdo = forte, direito = fino).
+    public void Rumble(double left, double right)
+    {
+        if (User < 0) return;
+        var v = new Vibration { Left = (ushort)(Math.Clamp(left, 0, 1) * 65535), Right = (ushort)(Math.Clamp(right, 0, 1) * 65535) };
+        try { XInputSetState(User, ref v); } catch { }
+    }
 
     const short Dead = 16000;
     const byte Trigger = 120;
@@ -30,9 +46,12 @@ public class Gamepad
     public Btn Poll()
     {
         Btn now = 0;
+        User = -1;
         for (int i = 0; i < 4; i++)
         {
             if (XInputGetState(i, out var s) != 0) continue;
+            Raw = s;
+            User = i;
             now = (Btn)(s.Buttons & 0xF33F);
             if (s.LT > Trigger) now |= Btn.LT;
             if (s.RT > Trigger) now |= Btn.RT;

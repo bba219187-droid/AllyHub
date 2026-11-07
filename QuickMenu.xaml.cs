@@ -20,11 +20,11 @@ public partial class QuickMenu : Window
     {
         InitializeComponent();
         _main = main;
-        _rows = new[] { BtnTdp, BtnProf, BtnBoost, BtnHub, BtnClose };
+        _rows = new[] { BtnTdp, BtnProf, BtnBoost, BtnFan, BtnHub, BtnClose };
         for (int i = 0; i < _rows.Length; i++)
         {
             var n = i;
-            _rows[i].Click += (_, _) => { _idx = n; if (n <= 1) Adjust(+1); else Confirm(); };
+            _rows[i].Click += (_, _) => { _idx = n; if (n <= 1 || n == 3) Adjust(+1); else Confirm(); };
         }
         _timer.Tick += (_, _) => RefreshStats();
         Deactivated += (_, _) => { if (IsVisible) CloseMenu(backToGame: false); };
@@ -72,6 +72,7 @@ public partial class QuickMenu : Window
     {
         if (_idx == 0) _main.AdjustWatts(d);
         else if (_idx == 1) _main.CycleProfile(d);
+        else if (_idx == 3) _main.CycleFan(d);
         Refresh();
     }
 
@@ -83,8 +84,9 @@ public partial class QuickMenu : Window
                 if (!_main.Booster && !_main.BoosterAccepted) { CloseMenu(backToGame: false); _main.ToggleBooster(); return; }
                 _main.ToggleBooster();
                 break;
-            case 3: CloseMenu(backToGame: false); _main.ShowHub(); return;
-            case 4: CloseMenu(); return;
+            case 3: _main.CycleFan(+1); break;
+            case 4: CloseMenu(backToGame: false); _main.ShowHub(); return;
+            case 5: CloseMenu(); return;
         }
         Refresh();
     }
@@ -93,6 +95,7 @@ public partial class QuickMenu : Window
     {
         BtnTdp.Content = _main.Booster ? $"⚡  TDP: {_main.EffectiveWatts} W (Booster)" : $"⚡  TDP: {_main.EffectiveWatts} W      ◀ ▶";
         BtnProf.Content = $"☰  Perfil: {_main.ProfileLabel}      ◀ ▶";
+        BtnFan.Content = $"🌀  Ventoinhas: {_main.FanName}      ◀ ▶";
         BtnBoost.Content = _main.Booster ? "🔥  Booster: LIGADO" : "🔥  Booster: desligado";
         for (int i = 0; i < _rows.Length; i++) _rows[i].Tag = i == _idx ? "sel" : null;
         GameName.Text = _main.PlayingName?.ToUpperInvariant() ?? "NENHUM JOGO DETETADO";
@@ -108,7 +111,9 @@ public partial class QuickMenu : Window
         if (_busy) return;
         _busy = true;
         var (temp, power) = await Task.Run(Tdp.Info);
+        var (rpm, _) = await Task.Run(Fans.Rpm);
         _busy = false;
+        FanRpm.Text = rpm is int r ? $"{r / 1000.0:0.0}k" : "—";
         CpuTemp.Text = temp is double t ? $"{t:0}°C" : "—";
         Power.Text = power is double p ? $"{p:0.0} W" : "—";
     }

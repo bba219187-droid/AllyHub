@@ -150,7 +150,7 @@
         <TextBlock Text="Favorito" VerticalAlignment="Center" Margin="0,0,18,0"/>
         <Border Style="{StaticResource Key}"><TextBlock Text="Y" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFC83D" FontWeight="Bold"/></Border>
         <TextBlock Text="Sistema" VerticalAlignment="Center" Margin="0,0,18,0"/>
-        <TextBlock Text="•  Em jogo: VIEW + MENU (ou Ctrl+Shift+A) abre o menu rápido" VerticalAlignment="Center" Foreground="#5E6472"/>
+        <TextBlock Text="•  T = modo de testes   •  Em jogo: VIEW + MENU (ou Ctrl+Shift+A) abre o menu rápido" VerticalAlignment="Center" Foreground="#5E6472"/>
       </WrapPanel>
     </Grid>
 
@@ -213,6 +213,8 @@
             <Button x:Name="BtnCheckUpdates" Style="{StaticResource PanelBtn}" Content="⟳  Procurar atualizações e drivers" Click="CheckUpdates_Click"/>
             <Button Style="{StaticResource PanelBtn}" Content="⊞  Abrir Windows Update" Click="OpenWU_Click"/>
             <Button Style="{StaticResource PanelBtn}" Content="◆  Abrir Armoury Crate (Update Center)" Click="OpenAC_Click"/>
+            <Button x:Name="BtnFans" Style="{StaticResource PanelBtn}" Click="Fans_Click"/>
+            <Button Style="{StaticResource PanelBtn}" Content="🧪  Modo de testes" Click="Tests_Click"/>
             <Button x:Name="BtnTheme" Style="{StaticResource PanelBtn}" Click="Theme_Click"/>
             <Button x:Name="BtnSounds" Style="{StaticResource PanelBtn}" Click="Sounds_Click"/>
             <Button x:Name="BtnAuto" Style="{StaticResource PanelBtn}" Click="AutoStart_Click"/>
@@ -228,6 +230,7 @@
             <TextBlock x:Name="SysGpu" FontSize="18" Margin="0,4" TextWrapping="Wrap"/>
             <TextBlock x:Name="SysWin" FontSize="18" Margin="0,4"/>
             <TextBlock x:Name="SysTdp" FontSize="18" Margin="0,4"/>
+            <TextBlock x:Name="SysFans" FontSize="18" Margin="0,4"/>
             <TextBlock Text="ATUALIZAÇÕES" FontSize="14" FontWeight="Bold" Foreground="{StaticResource MutedBrush}" Margin="0,26,0,8"/>
             <TextBlock x:Name="UpdState" FontSize="16" Foreground="#C9CDD6" TextWrapping="Wrap" Text="Carrega em «Procurar atualizações e drivers»."/>
             <ItemsControl x:Name="UpdList" Margin="0,8,0,0">

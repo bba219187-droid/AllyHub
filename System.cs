@@ -161,6 +161,17 @@ public static class SysInfo
            "foreach($u in $r.Updates){ if($u.Type -eq 2){'[Driver] '+$u.Title}else{$u.Title} }", 180000)
           .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
 
+    /// Saude da bateria: (capacidade de fabrica mWh, capacidade atual mWh, ciclos)
+    public static (long design, long full, int cycles) BatteryHealth()
+    {
+        var r = Ps("$d=(Get-CimInstance -Namespace root\\wmi -ClassName BatteryStaticData -ErrorAction SilentlyContinue | Select-Object -First 1).DesignedCapacity;" +
+                   "$f=(Get-CimInstance -Namespace root\\wmi -ClassName BatteryFullChargedCapacity -ErrorAction SilentlyContinue | Select-Object -First 1).FullChargedCapacity;" +
+                   "$c=(Get-CimInstance -Namespace root\\wmi -ClassName BatteryCycleCount -ErrorAction SilentlyContinue | Select-Object -First 1).CycleCount;" +
+                   "\"$d|$f|$c\"").Split('|');
+        long L(int i) => r.Length > i && long.TryParse(r[i].Trim(), out var v) ? v : 0;
+        return (L(0), L(1), (int)L(2));
+    }
+
     public static void OpenWindowsUpdate() => Open("ms-settings:windowsupdate");
 
     /// Abre o Armoury Crate SE (onde esta o Update Center da ASUS). false se nao encontrado.
@@ -181,7 +192,10 @@ public static class SysInfo
 public static class WavGen
 {
     /// WAV PCM 16-bit mono 44.1 kHz com envelope de decaimento em cada nota.
-    public static byte[] Wav((double freq, double secs)[] notes, double volume)
+    public static byte[] Wav((double freq, double secs)[] notes, double volume) => Wav(notes, volume, true, true, mono: true);
+
+    /// Mesma coisa em estereo, com cada canal ligado ou desligado (teste de colunas).
+    public static byte[] Wav((double freq, double secs)[] notes, double volume, bool left, bool right, bool mono = false)
     {
         const int rate = 44100;
         var samples = new List<short>();
@@ -191,14 +205,17 @@ public static class WavGen
             for (int i = 0; i < n; i++)
             {
                 double t = (double)i / rate, env = Math.Exp(-5.0 * i / n) * Math.Min(1, i / 60.0);
-                samples.Add((short)(Math.Sin(2 * Math.PI * f * t) * env * volume * short.MaxValue));
+                var v = (short)(Math.Sin(2 * Math.PI * f * t) * env * volume * short.MaxValue);
+                if (mono) samples.Add(v);
+                else { samples.Add(left ? v : (short)0); samples.Add(right ? v : (short)0); }
             }
         }
         using var ms = new MemoryStream();
         using var w = new BinaryWriter(ms);
         int bytes = samples.Count * 2;
         w.Write("RIFF"u8); w.Write(36 + bytes); w.Write("WAVE"u8);
-        w.Write("fmt "u8); w.Write(16); w.Write((short)1); w.Write((short)1); w.Write(rate); w.Write(rate * 2); w.Write((short)2); w.Write((short)16);
+        short ch = (short)(mono ? 1 : 2);
+        w.Write("fmt "u8); w.Write(16); w.Write((short)1); w.Write(ch); w.Write(rate); w.Write(rate * 2 * ch); w.Write((short)(2 * ch)); w.Write((short)16);
         w.Write("data"u8); w.Write(bytes);
         foreach (var s in samples) w.Write(s);
         w.Flush();
