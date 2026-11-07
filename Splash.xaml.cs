@@ -9,8 +9,11 @@ namespace AllyHub;
 
 public partial class Splash : Window
 {
-    public Splash()
+    readonly Config _cfg;
+
+    public Splash(Config cfg)
     {
+        _cfg = cfg;
         InitializeComponent();
         Ver.Text = "v" + Updater.CurrentText;
 
@@ -45,7 +48,7 @@ public partial class Splash : Window
     {
         Animate();
         var minTime = Task.Delay(2400);
-        var scan = Task.Run(Library.Scan);
+        var scan = Task.Run(() => Library.Scan(_cfg));
 
         try
         {
@@ -66,7 +69,7 @@ public partial class Splash : Window
         var games = await scan;
         await minTime;
 
-        var main = new MainWindow(games);
+        var main = new MainWindow(_cfg, games);
         main.Show();
         main.Activate();
         var fade = Anim(0, 450);

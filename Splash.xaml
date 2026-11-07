@@ -22,8 +22,8 @@
         <Image x:Name="Custom" Visibility="Collapsed" Stretch="Uniform"/>
         <Viewbox x:Name="Emblem">
           <Canvas Width="100" Height="100">
-            <Canvas.Effect><DropShadowEffect Color="#FF1F3D" BlurRadius="30" ShadowDepth="0" Opacity="1"/></Canvas.Effect>
-            <Path x:Name="Hex" Data="{StaticResource EmblemHex}" Stroke="#FF1F3D" StrokeThickness="4"
+            <Canvas.Effect><DropShadowEffect Color="{DynamicResource Accent}" BlurRadius="30" ShadowDepth="0" Opacity="1"/></Canvas.Effect>
+            <Path x:Name="Hex" Data="{StaticResource EmblemHex}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="4"
                   StrokeLineJoin="Miter" StrokeDashArray="80 80" StrokeDashOffset="80"/>
             <Path x:Name="Letter" Data="{StaticResource EmblemA}" Stroke="White" StrokeThickness="7"
                   StrokeLineJoin="Miter" StrokeStartLineCap="Square" StrokeEndLineCap="Square" Opacity="0"/>
@@ -33,7 +33,7 @@
       <TextBlock x:Name="Brand" Text="ALLYHUB" FontSize="64" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,24,0,0" Opacity="0"/>
       <TextBlock x:Name="Msg" Text="A iniciar…" FontSize="16" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Center" Margin="0,8,0,24"/>
       <Border Width="340" Height="4" Background="#1FFFFFFF" ClipToBounds="True">
-        <Rectangle Width="120" HorizontalAlignment="Left" Fill="{StaticResource AccentBrush}">
+        <Rectangle Width="120" HorizontalAlignment="Left" Fill="{DynamicResource AccentBrush}">
           <Rectangle.RenderTransform><TranslateTransform x:Name="BarX"/></Rectangle.RenderTransform>
         </Rectangle>
       </Border>

@@ -4,16 +4,15 @@
         Title="AllyHub" WindowState="Maximized" WindowStyle="None" ResizeMode="NoResize"
         Background="#0A0B0F" Foreground="White" FontFamily="{StaticResource Display}">
   <Grid>
-    <!-- ===== fundo: arte do jogo selecionado, desfocada ===== -->
-    <Image x:Name="HeroBg" Stretch="UniformToFill" Opacity="0">
-      <Image.Effect><BlurEffect Radius="28"/></Image.Effect>
-    </Image>
+    <!-- ===== fundo: arte do jogo selecionado (duas camadas para crossfade) ===== -->
+    <Image x:Name="HeroA" Stretch="UniformToFill" Opacity="0"><Image.Effect><BlurEffect Radius="26"/></Image.Effect></Image>
+    <Image x:Name="HeroB" Stretch="UniformToFill" Opacity="0"><Image.Effect><BlurEffect Radius="26"/></Image.Effect></Image>
     <Rectangle IsHitTestVisible="False">
       <Rectangle.Fill>
         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
           <GradientStop Color="#D00A0B0F" Offset="0"/>
-          <GradientStop Color="#550A0B0F" Offset="0.4"/>
-          <GradientStop Color="#F20A0B0F" Offset="0.78"/>
+          <GradientStop Color="#500A0B0F" Offset="0.38"/>
+          <GradientStop Color="#F20A0B0F" Offset="0.76"/>
         </LinearGradientBrush>
       </Rectangle.Fill>
     </Rectangle>
@@ -26,28 +25,34 @@
       </Rectangle.Fill>
     </Rectangle>
     <Rectangle Fill="{StaticResource Stripes}" Opacity="0.035" IsHitTestVisible="False"/>
-    <Ellipse Width="1000" Height="1000" HorizontalAlignment="Left" VerticalAlignment="Bottom"
-             Margin="-500,0,0,-560" IsHitTestVisible="False">
+    <Ellipse Width="1000" Height="1000" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-500,0,0,-560" IsHitTestVisible="False" Opacity="0.3">
       <Ellipse.Fill>
         <RadialGradientBrush>
-          <GradientStop Color="#45FF1F3D" Offset="0"/>
-          <GradientStop Color="#00FF1F3D" Offset="1"/>
+          <GradientStop Color="{DynamicResource Accent}" Offset="0"/>
+          <GradientStop Color="Transparent" Offset="1"/>
         </RadialGradientBrush>
       </Ellipse.Fill>
     </Ellipse>
 
-    <Grid Margin="44,26,44,20">
+    <!-- ===================== BIBLIOTECA ===================== -->
+    <Grid x:Name="MainContent" Margin="44,26,44,18">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="*"/>
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
       </Grid.RowDefinitions>
 
-      <!-- ===== barra de cima ===== -->
+      <!-- barra de cima -->
       <DockPanel>
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
-          <Button x:Name="AutoBtn" Style="{StaticResource Chip}" Click="AutoStart_Click" Margin="0,0,14,0"/>
+          <Border x:Name="BoosterBadge" Background="{DynamicResource AccentBrush}" Padding="12,4" Margin="0,0,16,0" Visibility="Collapsed" VerticalAlignment="Center">
+            <Border.RenderTransform><SkewTransform AngleX="-12"/></Border.RenderTransform>
+            <Border.Effect><DropShadowEffect Color="{DynamicResource Accent}" BlurRadius="20" ShadowDepth="0"/></Border.Effect>
+            <TextBlock Text="⚡ BOOSTER" FontSize="15" FontWeight="Bold"/>
+          </Border>
+          <Button Content="⚙  Sistema" Style="{StaticResource Chip}" Click="System_Click" Margin="0,0,16,0"/>
           <TextBlock x:Name="BatteryText" FontSize="18" VerticalAlignment="Center" Margin="0,0,20,0"/>
           <TextBlock x:Name="Clock" FontSize="26" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,20,0"/>
           <Button Content="✕" Style="{StaticResource Chip}" Click="Exit_Click" Margin="0"/>
@@ -55,8 +60,8 @@
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
           <Viewbox Width="38" Height="38">
             <Canvas Width="100" Height="100">
-              <Canvas.Effect><DropShadowEffect Color="#FF1F3D" BlurRadius="14" ShadowDepth="0"/></Canvas.Effect>
-              <Path Data="{StaticResource EmblemHex}" Stroke="#FF1F3D" StrokeThickness="6"/>
+              <Canvas.Effect><DropShadowEffect Color="{DynamicResource Accent}" BlurRadius="14" ShadowDepth="0"/></Canvas.Effect>
+              <Path Data="{StaticResource EmblemHex}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="6"/>
               <Path Data="{StaticResource EmblemA}" Stroke="White" StrokeThickness="9" StrokeStartLineCap="Square" StrokeEndLineCap="Square"/>
             </Canvas>
           </Viewbox>
@@ -65,7 +70,7 @@
         </StackPanel>
       </DockPanel>
 
-      <!-- ===== centro: jogo selecionado + painel de desempenho ===== -->
+      <!-- centro: jogo selecionado + painel de desempenho -->
       <Grid Grid.Row="1">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"/>
@@ -73,68 +78,216 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel x:Name="Info" VerticalAlignment="Bottom" Margin="0,0,40,0">
-          <Border Background="{StaticResource AccentBrush}" HorizontalAlignment="Left" Padding="12,3">
-            <Border.RenderTransform><SkewTransform AngleX="-12"/></Border.RenderTransform>
-            <TextBlock x:Name="StoreText" FontSize="14" FontWeight="Bold"/>
-          </Border>
-          <TextBlock x:Name="GameTitle" FontSize="58" FontWeight="Bold" TextWrapping="Wrap" Margin="0,10,0,4">
+          <StackPanel.RenderTransform><TranslateTransform x:Name="InfoX"/></StackPanel.RenderTransform>
+          <StackPanel Orientation="Horizontal">
+            <Border Background="{DynamicResource AccentBrush}" Padding="12,3">
+              <Border.RenderTransform><SkewTransform AngleX="-12"/></Border.RenderTransform>
+              <TextBlock x:Name="StoreText" FontSize="14" FontWeight="Bold"/>
+            </Border>
+            <TextBlock x:Name="FavStar" Text="★" FontSize="22" Foreground="#FFC83D" Margin="14,0,0,0" VerticalAlignment="Center" Visibility="Collapsed"/>
+          </StackPanel>
+          <TextBlock x:Name="GameTitle" FontSize="58" FontWeight="Bold" TextWrapping="Wrap" Margin="0,10,0,6">
             <TextBlock.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.8"/></TextBlock.Effect>
           </TextBlock>
-          <TextBlock x:Name="GameInfo" FontSize="18" Foreground="{StaticResource MutedBrush}"/>
+          <TextBlock x:Name="GameInfo" FontSize="18" Foreground="#C9CDD6"/>
         </StackPanel>
 
-        <!-- cartao de desempenho -->
         <Border Grid.Column="1" VerticalAlignment="Center" Background="{StaticResource CardBrush}"
-                BorderBrush="#26FFFFFF" BorderThickness="1" CornerRadius="4" Padding="26,22">
+                BorderBrush="#26FFFFFF" BorderThickness="1" CornerRadius="4" Padding="26,20">
           <StackPanel>
             <DockPanel>
-              <TextBlock x:Name="ProfileName" DockPanel.Dock="Right" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
+              <TextBlock x:Name="ProfileName" DockPanel.Dock="Right" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
               <TextBlock Text="DESEMPENHO" FontSize="14" FontWeight="Bold" Foreground="{StaticResource MutedBrush}"/>
             </DockPanel>
-
-            <Grid Width="220" Height="220" Margin="0,12,0,6">
+            <Grid Width="220" Height="220" Margin="0,10,0,4">
               <Path x:Name="GaugeTrack" Stroke="#22FFFFFF" StrokeThickness="14" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
               <Path x:Name="GaugeArc" StrokeThickness="14" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
                 <Path.Stroke>
                   <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
-                    <GradientStop Color="#FF8A1F" Offset="0"/>
-                    <GradientStop Color="#FF1F3D" Offset="1"/>
+                    <GradientStop Color="#FFC83D" Offset="0"/>
+                    <GradientStop Color="{DynamicResource Accent}" Offset="1"/>
                   </LinearGradientBrush>
                 </Path.Stroke>
-                <Path.Effect><DropShadowEffect Color="#FF1F3D" BlurRadius="22" ShadowDepth="0"/></Path.Effect>
+                <Path.Effect><DropShadowEffect Color="{DynamicResource Accent}" BlurRadius="22" ShadowDepth="0"/></Path.Effect>
               </Path>
               <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock x:Name="WattsBig" FontSize="72" FontWeight="Bold" HorizontalAlignment="Center"/>
                 <TextBlock Text="WATTS" FontSize="14" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Center" Margin="0,-8,0,0"/>
               </StackPanel>
             </Grid>
-
-            <WrapPanel x:Name="ProfileBar" HorizontalAlignment="Center" Margin="0,6,0,4"/>
-            <Slider x:Name="WattSlider" Focusable="False" IsSnapToTickEnabled="True" TickFrequency="1"
-                    Margin="0,6,0,0" ValueChanged="Slider_Changed"/>
+            <WrapPanel x:Name="ProfileBar" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+            <Slider x:Name="WattSlider" Focusable="False" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,6,0,0" ValueChanged="Slider_Changed"/>
+            <Button x:Name="BoosterBtn" Style="{StaticResource Chip}" Click="Booster_Click" HorizontalAlignment="Center" Margin="0,12,0,0" Content="⚡ Ativar Booster"/>
             <TextBlock x:Name="TdpState" FontSize="13" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
           </StackPanel>
         </Border>
       </Grid>
 
-      <!-- ===== carrossel de jogos ===== -->
-      <ScrollViewer x:Name="Scroll" Grid.Row="2" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled"
-                    Focusable="False" Margin="-16,8,-16,0" PanningMode="HorizontalOnly">
+      <!-- filtros -->
+      <StackPanel x:Name="FilterBar" Grid.Row="2" Orientation="Horizontal" Margin="0,14,0,0"/>
+
+      <!-- carrossel -->
+      <ScrollViewer x:Name="Scroll" Grid.Row="3" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled"
+                    Focusable="False" Margin="-16,0,-16,0" PanningMode="HorizontalOnly">
         <StackPanel x:Name="Tiles" Orientation="Horizontal"/>
       </ScrollViewer>
 
-      <!-- ===== legenda do comando ===== -->
-      <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,4,0,0" TextElement.FontSize="15" TextElement.Foreground="#9AA0AE">
+      <!-- legenda -->
+      <WrapPanel Grid.Row="4" Margin="0,2,0,0" TextElement.FontSize="14" TextElement.Foreground="#9AA0AE">
         <Border Style="{StaticResource Key}"><TextBlock Text="A" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#5BD75B" FontWeight="Bold"/></Border>
-        <TextBlock Text="Jogar" VerticalAlignment="Center" Margin="0,0,22,0"/>
-        <Border Style="{StaticResource Key}" Width="40"><TextBlock Text="LB RB" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/></Border>
-        <TextBlock Text="Perfil" VerticalAlignment="Center" Margin="0,0,22,0"/>
+        <TextBlock Text="Jogar" VerticalAlignment="Center" Margin="0,0,18,0"/>
+        <Border Style="{StaticResource Key}" Width="44"><TextBlock Text="MENU" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/></Border>
+        <TextBlock Text="Detalhes" VerticalAlignment="Center" Margin="0,0,18,0"/>
+        <Border Style="{StaticResource Key}" Width="44"><TextBlock Text="VIEW" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/></Border>
+        <TextBlock Text="Booster" VerticalAlignment="Center" Margin="0,0,18,0"/>
+        <Border Style="{StaticResource Key}" Width="44"><TextBlock Text="LT RT" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/></Border>
+        <TextBlock Text="Filtro" VerticalAlignment="Center" Margin="0,0,18,0"/>
+        <Border Style="{StaticResource Key}" Width="44"><TextBlock Text="LB RB" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/></Border>
+        <TextBlock Text="Perfil" VerticalAlignment="Center" Margin="0,0,18,0"/>
+        <Border Style="{StaticResource Key}"><TextBlock Text="↕" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/></Border>
+        <TextBlock Text="±1 W" VerticalAlignment="Center" Margin="0,0,18,0"/>
         <Border Style="{StaticResource Key}"><TextBlock Text="X" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#4FA3FF" FontWeight="Bold"/></Border>
+        <TextBlock Text="Favorito" VerticalAlignment="Center" Margin="0,0,18,0"/>
         <Border Style="{StaticResource Key}"><TextBlock Text="Y" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFC83D" FontWeight="Bold"/></Border>
-        <TextBlock Text="−/+ 1 W" VerticalAlignment="Center" Margin="0,0,22,0"/>
-        <Border Style="{StaticResource Key}"><TextBlock Text="B" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF5C5C" FontWeight="Bold"/></Border>
-        <TextBlock Text="Atualizar lista" VerticalAlignment="Center" Margin="0,0,22,0"/>
-        <TextBlock Text="•  Ecrã: toca para escolher, toca outra vez para jogar" VerticalAlignment="Center" Foreground="#5E6472"/>
+        <TextBlock Text="Sistema" VerticalAlignment="Center" Margin="0,0,18,0"/>
+        <TextBlock Text="•  Em jogo: VIEW + MENU (ou Ctrl+Shift+A) abre o menu rápido" VerticalAlignment="Center" Foreground="#5E6472"/>
+      </WrapPanel>
+    </Grid>
+
+    <!-- ===================== DETALHES DO JOGO ===================== -->
+    <Grid x:Name="DetailsPanel" Visibility="Collapsed" Background="#E60A0B0F">
+      <Grid Margin="80,60" VerticalAlignment="Center">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="340"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Border Width="300" Height="450" CornerRadius="8" ClipToBounds="True" Background="#1A1C24" VerticalAlignment="Top"
+                BorderBrush="{DynamicResource AccentBrush}" BorderThickness="2">
+          <Border.Effect><DropShadowEffect Color="{DynamicResource Accent}" BlurRadius="40" ShadowDepth="0" Opacity="0.7"/></Border.Effect>
+          <Grid>
+            <TextBlock x:Name="DetailsCoverText" FontSize="24" FontWeight="Bold" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="20"/>
+            <Image x:Name="DetailsCover" Stretch="UniformToFill"/>
+          </Grid>
+        </Border>
+        <StackPanel Grid.Column="1" Margin="30,0,0,0">
+          <Border Background="{DynamicResource AccentBrush}" Padding="12,3" HorizontalAlignment="Left">
+            <Border.RenderTransform><SkewTransform AngleX="-12"/></Border.RenderTransform>
+            <TextBlock x:Name="DetailsStore" FontSize="14" FontWeight="Bold"/>
+          </Border>
+          <TextBlock x:Name="DetailsTitle" FontSize="52" FontWeight="Bold" TextWrapping="Wrap" Margin="0,10,0,20"/>
+          <UniformGrid Columns="3" Margin="0,0,0,26">
+            <StackPanel>
+              <TextBlock Text="TEMPO DE JOGO" FontSize="13" Foreground="{StaticResource MutedBrush}"/>
+              <TextBlock x:Name="StatTime" FontSize="26" FontWeight="SemiBold"/>
+            </StackPanel>
+            <StackPanel>
+              <TextBlock Text="ÚLTIMA VEZ" FontSize="13" Foreground="{StaticResource MutedBrush}"/>
+              <TextBlock x:Name="StatLast" FontSize="26" FontWeight="SemiBold"/>
+            </StackPanel>
+            <StackPanel>
+              <TextBlock Text="PERFIL" FontSize="13" Foreground="{StaticResource MutedBrush}"/>
+              <TextBlock x:Name="StatProfile" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}"/>
+            </StackPanel>
+          </UniformGrid>
+          <StackPanel x:Name="DetailsButtons" Width="460" HorizontalAlignment="Left">
+            <Button x:Name="BtnPlay" Style="{StaticResource PanelBtn}" Content="▶  Jogar" Click="DetailsPlay_Click"/>
+            <Button x:Name="BtnProfile" Style="{StaticResource PanelBtn}" Click="DetailsProfile_Click"/>
+            <Button x:Name="BtnFav" Style="{StaticResource PanelBtn}" Click="DetailsFav_Click"/>
+            <Button x:Name="BtnRemove" Style="{StaticResource PanelBtn}" Content="🗑  Remover da AllyHub" Click="DetailsRemove_Click"/>
+            <Button Style="{StaticResource PanelBtn}" Content="←  Voltar" Click="ClosePanel_Click"/>
+          </StackPanel>
+        </StackPanel>
+      </Grid>
+    </Grid>
+
+    <!-- ===================== SISTEMA ===================== -->
+    <Grid x:Name="SystemPanel" Visibility="Collapsed" Background="#EE0A0B0F">
+      <Grid Margin="80,50">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="460"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel>
+          <TextBlock Text="SISTEMA" FontSize="40" FontWeight="Bold" Margin="0,0,0,20"/>
+          <StackPanel x:Name="SystemButtons">
+            <Button x:Name="BtnCheckUpdates" Style="{StaticResource PanelBtn}" Content="⟳  Procurar atualizações e drivers" Click="CheckUpdates_Click"/>
+            <Button Style="{StaticResource PanelBtn}" Content="⊞  Abrir Windows Update" Click="OpenWU_Click"/>
+            <Button Style="{StaticResource PanelBtn}" Content="◆  Abrir Armoury Crate (Update Center)" Click="OpenAC_Click"/>
+            <Button x:Name="BtnTheme" Style="{StaticResource PanelBtn}" Click="Theme_Click"/>
+            <Button x:Name="BtnSounds" Style="{StaticResource PanelBtn}" Click="Sounds_Click"/>
+            <Button x:Name="BtnAuto" Style="{StaticResource PanelBtn}" Click="AutoStart_Click"/>
+            <Button Style="{StaticResource PanelBtn}" Content="＋  Adicionar jogo (.exe)" Click="AddGame_Click"/>
+            <Button Style="{StaticResource PanelBtn}" Content="←  Voltar" Click="ClosePanel_Click"/>
+          </StackPanel>
+        </StackPanel>
+        <Border Grid.Column="1" Margin="40,70,0,0" Background="{StaticResource CardBrush}" BorderBrush="#26FFFFFF" BorderThickness="1" CornerRadius="4" Padding="28,22">
+          <StackPanel>
+            <TextBlock Text="ESTE ALLY" FontSize="14" FontWeight="Bold" Foreground="{StaticResource MutedBrush}"/>
+            <TextBlock x:Name="SysVersion" FontSize="18" Margin="0,10,0,4"/>
+            <TextBlock x:Name="SysBios" FontSize="18" Margin="0,4"/>
+            <TextBlock x:Name="SysGpu" FontSize="18" Margin="0,4" TextWrapping="Wrap"/>
+            <TextBlock x:Name="SysWin" FontSize="18" Margin="0,4"/>
+            <TextBlock x:Name="SysTdp" FontSize="18" Margin="0,4"/>
+            <TextBlock Text="ATUALIZAÇÕES" FontSize="14" FontWeight="Bold" Foreground="{StaticResource MutedBrush}" Margin="0,26,0,8"/>
+            <TextBlock x:Name="UpdState" FontSize="16" Foreground="#C9CDD6" TextWrapping="Wrap" Text="Carrega em «Procurar atualizações e drivers»."/>
+            <ItemsControl x:Name="UpdList" Margin="0,8,0,0">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate><TextBlock Text="{Binding}" FontSize="15" TextWrapping="Wrap" Margin="0,3"/></DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock FontSize="13" Foreground="#5E6472" TextWrapping="Wrap" Margin="0,16,0,0"
+                       Text="Os drivers da ASUS e da AMD para o Ally chegam pelo Windows Update e pelo Update Center do Armoury Crate. A AllyHub mostra o que está pendente; a instalação é feita por eles."/>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Grid>
+
+    <!-- ===================== TERMOS DO BOOSTER ===================== -->
+    <Grid x:Name="TermsPanel" Visibility="Collapsed" Background="#F20A0B0F">
+      <Border Width="820" VerticalAlignment="Center" Background="{StaticResource CardBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" CornerRadius="4" Padding="40,32">
+        <StackPanel>
+          <TextBlock Text="⚡ MODO BOOSTER — TERMOS" FontSize="32" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
+          <TextBlock FontSize="17" TextWrapping="Wrap" Margin="0,18,0,0" LineHeight="26" Foreground="#D9DCE3">
+            O Modo Booster põe o ROG Ally no desempenho máximo:<LineBreak/>
+            •  TDP no máximo que a ASUS permite — 30 W ligado à corrente, 25 W na bateria. Nunca acima do limite do fabricante.<LineBreak/>
+            •  Plano de energia do Windows em «Melhor desempenho».<LineBreak/><LineBreak/>
+            O que deves saber:<LineBreak/>
+            •  O Ally aquece mais e a ventoinha faz mais barulho.<LineBreak/>
+            •  A bateria dura bastante menos.<LineBreak/>
+            •  Potência máxima durante muito tempo pode desgastar mais a bateria e os componentes.<LineBreak/>
+            •  Alguns anti-cheats podem não gostar de programas que mudam o TDP.<LineBreak/>
+            •  A AllyHub não é uma app oficial da ASUS. Usas este modo por tua conta e risco.<LineBreak/><LineBreak/>
+            Podes desligar o Booster quando quiseres (botão VIEW ou no menu rápido).
+          </TextBlock>
+          <StackPanel x:Name="TermsButtons" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,26,0,0">
+            <Button x:Name="BtnTermsNo" Style="{StaticResource PanelBtn}" Content="Cancelar" Click="ClosePanel_Click" Margin="0,0,12,0" MinWidth="160"/>
+            <Button Style="{StaticResource PanelBtn}" Content="Aceito os termos — ativar Booster" Click="TermsAccept_Click"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <!-- ===================== A ABRIR O JOGO ===================== -->
+    <Grid x:Name="LaunchPanel" Visibility="Collapsed" Background="#0A0B0F">
+      <Image x:Name="LaunchHero" Stretch="UniformToFill" Opacity="0.5"/>
+      <Rectangle>
+        <Rectangle.Fill>
+          <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#600A0B0F" Offset="0"/>
+            <GradientStop Color="#F50A0B0F" Offset="0.85"/>
+          </LinearGradientBrush>
+        </Rectangle.Fill>
+      </Rectangle>
+      <StackPanel VerticalAlignment="Bottom" Margin="80,0,80,90">
+        <TextBlock x:Name="LaunchStep" Text="A ABRIR" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
+        <TextBlock x:Name="LaunchTitle" FontSize="64" FontWeight="Bold" TextWrapping="Wrap" Margin="0,6,0,18"/>
+        <Border Width="420" Height="4" HorizontalAlignment="Left" Background="#1FFFFFFF" ClipToBounds="True">
+          <Rectangle Width="140" HorizontalAlignment="Left" Fill="{DynamicResource AccentBrush}">
+            <Rectangle.RenderTransform><TranslateTransform x:Name="LaunchBarX"/></Rectangle.RenderTransform>
+          </Rectangle>
+        </Border>
+        <TextBlock x:Name="LaunchInfo" FontSize="16" Foreground="{StaticResource MutedBrush}" Margin="0,14,0,0"/>
+        <TextBlock Text="B — voltar à AllyHub" FontSize="13" Foreground="#5E6472" Margin="0,6,0,0"/>
       </StackPanel>
     </Grid>
   </Grid>

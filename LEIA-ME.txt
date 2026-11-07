@@ -38,13 +38,30 @@ Da proxima vez que o Ally abrir a AllyHub, ela descarrega a versao nova,
 substitui-se e reinicia sozinha.
 
 
-CONTROLOS
----------
-Comando:  esquerda/direita = jogo     A = jogar
-          cima/baixo ou Y/X = +/- 1 W  LB/RB = perfil
-          B = atualizar a lista
-Ecra:     toca num jogo para o escolher e toca outra vez para jogar.
-Teclado:  setas, Enter, PgUp/PgDn, F5, Esc para sair.
+CONTROLOS (v1.1)
+----------------
+Biblioteca:  esquerda/direita = jogo      A = jogar         MENU = detalhes
+             cima/baixo = +/- 1 W         LB/RB = perfil    VIEW = Booster
+             LT/RT = filtro (Todos, Favoritos, Recentes, lojas)
+             X = favorito   Y = Sistema   B = atualizar a lista
+Em jogo:     VIEW + MENU ao mesmo tempo (ou Ctrl+Shift+A) = menu rapido
+Paineis:     setas = escolher   A = confirmar   B = voltar
+Ecra:        toca num jogo para o escolher e toca outra vez para jogar.
+Teclado:     setas, Enter, Tab (filtro), F (favorito), D (detalhes),
+             S (sistema), B (booster), F5, Esc.
 
-Os perfis e o TDP de cada jogo ficam em %AppData%\AllyHub\config.json
-(podes edita-lo para criar ou mudar perfis). 30 W so ligado a corrente.
+NOVO NA v1.1
+------------
+- Ecra "A abrir" por cima da Steam ate a janela do jogo aparecer.
+- Tempo de jogo, ultima vez jogado, favoritos, recentes e filtros.
+- Ubisoft Connect e jogos adicionados a mao (.exe) - em Sistema.
+- Ecra de detalhes de cada jogo.
+- Menu rapido em jogo: TDP, perfil, Booster, temperatura, potencia, bateria.
+- Modo Booster (com termos): TDP maximo da ASUS + plano "Melhor desempenho".
+- Sistema: BIOS, driver da GPU, atualizacoes pendentes do Windows Update
+  (inclui drivers), atalho para o Update Center do Armoury Crate.
+- Temas de cor, sons de navegacao, animacoes novas.
+- Volta sozinha a AllyHub quando fechas o jogo.
+
+Os perfis, tempos de jogo e o TDP de cada jogo ficam em
+%AppData%\AllyHub\config.json. 30 W so ligado a corrente.

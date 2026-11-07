@@ -39,11 +39,11 @@
             </Border>
             <ControlTemplate.Triggers>
               <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="b" Property="BorderBrush" Value="#FF1F3D"/>
+                <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
               </Trigger>
               <Trigger Property="Tag" Value="on">
-                <Setter TargetName="b" Property="Background" Value="#FF1F3D"/>
-                <Setter TargetName="b" Property="BorderBrush" Value="#FF1F3D"/>
+                <Setter TargetName="b" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
               </Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
@@ -64,13 +64,13 @@
             <Grid x:Name="root" RenderTransformOrigin="0.5,0.5">
               <Grid.RenderTransform><ScaleTransform x:Name="sc" ScaleX="1" ScaleY="1"/></Grid.RenderTransform>
               <Border x:Name="frame" Background="#1A1C24" BorderBrush="#22FFFFFF" BorderThickness="2" CornerRadius="6">
-                <Border.Effect><DropShadowEffect x:Name="glow" Color="#FF1F3D" BlurRadius="0" ShadowDepth="0" Opacity="0"/></Border.Effect>
+                <Border.Effect><DropShadowEffect x:Name="glow" Color="{DynamicResource Accent}" BlurRadius="0" ShadowDepth="0" Opacity="0"/></Border.Effect>
                 <Grid ClipToBounds="True"><ContentPresenter/></Grid>
               </Border>
             </Grid>
             <ControlTemplate.Triggers>
               <Trigger Property="IsKeyboardFocused" Value="True">
-                <Setter TargetName="frame" Property="BorderBrush" Value="#FF1F3D"/>
+                <Setter TargetName="frame" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                 <Trigger.EnterActions>
                   <BeginStoryboard>
                     <Storyboard>
@@ -91,6 +91,44 @@
                     </Storyboard>
                   </BeginStoryboard>
                 </Trigger.ExitActions>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- botoes dos paineis: realce por foco (comando/teclado) ou Tag="sel" (menu rapido) -->
+    <Style x:Key="PanelBtn" TargetType="Button">
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontFamily" Value="{StaticResource Display}"/>
+      <Setter Property="FontSize" Value="18"/>
+      <Setter Property="Margin" Value="0,0,0,10"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+      <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Grid>
+              <Border x:Name="b" Background="#14FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1" CornerRadius="4" Padding="18,12">
+                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+              </Border>
+              <Rectangle x:Name="bar" Width="4" HorizontalAlignment="Left" Fill="{DynamicResource AccentBrush}" Visibility="Collapsed"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="b" Property="Background" Value="#26FFFFFF"/>
+                <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                <Setter TargetName="bar" Property="Visibility" Value="Visible"/>
+              </Trigger>
+              <Trigger Property="Tag" Value="sel">
+                <Setter TargetName="b" Property="Background" Value="#26FFFFFF"/>
+                <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                <Setter TargetName="bar" Property="Visibility" Value="Visible"/>
+              </Trigger>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
               </Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>

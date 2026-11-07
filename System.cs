@@ -95,3 +95,136 @@ public static class Battery
     public static (int percent, bool charging) Get() =>
         GetSystemPowerStatus(out var s) ? (s.Percent == 255 ? -1 : s.Percent, s.AC == 1) : (-1, false);
 }
+
+/// Informacao do sistema e atualizacoes (Windows Update inclui drivers da ASUS/AMD).
+public static class SysInfo
+{
+    public static string Ps(string script, int timeoutMs = 30000)
+    {
+        try
+        {
+            var enc = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(script));
+            using var p = Process.Start(new ProcessStartInfo("powershell", $"-NoProfile -ExecutionPolicy Bypass -EncodedCommand {enc}")
+            {
+                CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true,
+                StandardOutputEncoding = System.Text.Encoding.UTF8,
+            })!;
+            var output = p.StandardOutput.ReadToEndAsync();
+            if (!p.WaitForExit(timeoutMs)) { try { p.Kill(); } catch { } return ""; }
+            return output.Result.Trim();
+        }
+        catch { return ""; }
+    }
+
+    /// (BIOS, GPU + versao do driver, versao do Windows)
+    public static (string bios, string gpu, string windows) Basic()
+    {
+        var r = Ps("[Console]::OutputEncoding=[Text.Encoding]::UTF8;" +
+                   "$b=(Get-CimInstance Win32_BIOS).SMBIOSBIOSVersion;" +
+                   "$g=Get-CimInstance Win32_VideoController | Select-Object -First 1;" +
+                   "$o=Get-CimInstance Win32_OperatingSystem;" +
+                   "\"$b|$($g.Name) — driver $($g.DriverVersion)|$($o.Caption) ($($o.BuildNumber))\"").Split('|');
+        string At(int i) => r.Length > i && r[i].Trim() != "" ? r[i].Trim() : "—";
+        return (At(0), At(1), At(2));
+    }
+
+    /// Atualizacoes pendentes no Windows Update (drivers marcados com [Driver]).
+    public static List<string> PendingUpdates() =>
+        Ps("[Console]::OutputEncoding=[Text.Encoding]::UTF8;" +
+           "$s=New-Object -ComObject Microsoft.Update.Session;" +
+           "$r=$s.CreateUpdateSearcher().Search('IsInstalled=0 and IsHidden=0');" +
+           "foreach($u in $r.Updates){ if($u.Type -eq 2){'[Driver] '+$u.Title}else{$u.Title} }", 180000)
+          .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+
+    public static void OpenWindowsUpdate() => Open("ms-settings:windowsupdate");
+
+    /// Abre o Armoury Crate SE (onde esta o Update Center da ASUS). false se nao encontrado.
+    public static bool OpenArmouryCrate()
+    {
+        var id = Ps("(Get-StartApps | Where-Object { $_.Name -like '*Armoury Crate*' } | Select-Object -First 1).AppID");
+        if (id == "") return false;
+        Open("shell:AppsFolder\\" + id);
+        return true;
+    }
+
+    public static void Open(string target)
+    {
+        try { Process.Start(new ProcessStartInfo(target) { UseShellExecute = true }); } catch { }
+    }
+}
+
+public static class WavGen
+{
+    /// WAV PCM 16-bit mono 44.1 kHz com envelope de decaimento em cada nota.
+    public static byte[] Wav((double freq, double secs)[] notes, double volume)
+    {
+        const int rate = 44100;
+        var samples = new List<short>();
+        foreach (var (f, d) in notes)
+        {
+            int n = (int)(rate * d);
+            for (int i = 0; i < n; i++)
+            {
+                double t = (double)i / rate, env = Math.Exp(-5.0 * i / n) * Math.Min(1, i / 60.0);
+                samples.Add((short)(Math.Sin(2 * Math.PI * f * t) * env * volume * short.MaxValue));
+            }
+        }
+        using var ms = new MemoryStream();
+        using var w = new BinaryWriter(ms);
+        int bytes = samples.Count * 2;
+        w.Write("RIFF"u8); w.Write(36 + bytes); w.Write("WAVE"u8);
+        w.Write("fmt "u8); w.Write(16); w.Write((short)1); w.Write((short)1); w.Write(rate); w.Write(rate * 2); w.Write((short)2); w.Write((short)16);
+        w.Write("data"u8); w.Write(bytes);
+        foreach (var s in samples) w.Write(s);
+        w.Flush();
+        return ms.ToArray();
+    }
+}
+
+public static class Native
+{
+    [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+    [DllImport("user32.dll")] public static extern bool RegisterHotKey(IntPtr h, int id, uint mods, uint vk);
+    [DllImport("user32.dll")] public static extern bool UnregisterHotKey(IntPtr h, int id);
+    [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
+}
+
+/// Descobre se um jogo esta a correr (processo com executavel dentro da pasta do jogo).
+public static class Running
+{
+    /// 0 = nao esta a correr, 1 = processo existe, 2 = processo com janela visivel
+    public static int Check(string installDir)
+    {
+        var dir = installDir.TrimEnd('\\', '/') + "\\";
+        int best = 0;
+        foreach (var p in Process.GetProcesses())
+        {
+            try
+            {
+                var f = p.MainModule?.FileName;
+                if (f != null && f.StartsWith(dir, StringComparison.OrdinalIgnoreCase))
+                {
+                    best = Math.Max(best, p.MainWindowHandle != IntPtr.Zero ? 2 : 1);
+                    if (best == 2) return 2;
+                }
+            }
+            catch { /* processos do sistema: sem acesso */ }
+            finally { p.Dispose(); }
+        }
+        return best;
+    }
+
+    /// Pasta do jogo que esta em primeiro plano? (para saber se a janela ja esta a frente)
+    public static bool IsForeground(string installDir)
+    {
+        try
+        {
+            Native.GetWindowThreadProcessId(Native.GetForegroundWindow(), out var pid);
+            using var p = Process.GetProcessById((int)pid);
+            var f = p.MainModule?.FileName;
+            return f != null && f.StartsWith(installDir.TrimEnd('\\', '/') + "\\", StringComparison.OrdinalIgnoreCase);
+        }
+        catch { return false; }
+    }
+}

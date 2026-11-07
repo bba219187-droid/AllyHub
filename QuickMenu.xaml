@@ -1,0 +1,43 @@
+<Window x:Class="AllyHub.QuickMenu"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AllyHub — Menu rápido" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize" Width="440"
+        Foreground="White" FontFamily="{StaticResource Display}">
+  <Border x:Name="Card" Background="#F50E0F14" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="3,0,0,0" Padding="28,30">
+    <Border.RenderTransform><TranslateTransform x:Name="SlideX"/></Border.RenderTransform>
+    <DockPanel>
+      <TextBlock DockPanel.Dock="Bottom" FontSize="13" Foreground="#5E6472" TextWrapping="Wrap"
+                 Text="↕ escolher   ◀ ▶ ajustar   A confirmar   B fechar"/>
+      <StackPanel>
+        <DockPanel>
+          <TextBlock x:Name="Clock" DockPanel.Dock="Right" FontSize="22" FontWeight="SemiBold"/>
+          <TextBlock Text="MENU RÁPIDO" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center"/>
+        </DockPanel>
+        <TextBlock x:Name="GameName" FontSize="28" FontWeight="Bold" TextWrapping="Wrap" Margin="0,14,0,2"/>
+        <TextBlock x:Name="Session" FontSize="15" Foreground="#8A90A0"/>
+
+        <UniformGrid Columns="3" Margin="0,24,0,24">
+          <StackPanel>
+            <TextBlock Text="CPU" FontSize="12" Foreground="#8A90A0"/>
+            <TextBlock x:Name="CpuTemp" Text="—" FontSize="26" FontWeight="SemiBold"/>
+          </StackPanel>
+          <StackPanel>
+            <TextBlock Text="POTÊNCIA" FontSize="12" Foreground="#8A90A0"/>
+            <TextBlock x:Name="Power" Text="—" FontSize="26" FontWeight="SemiBold"/>
+          </StackPanel>
+          <StackPanel>
+            <TextBlock Text="BATERIA" FontSize="12" Foreground="#8A90A0"/>
+            <TextBlock x:Name="Bat" Text="—" FontSize="26" FontWeight="SemiBold"/>
+          </StackPanel>
+        </UniformGrid>
+
+        <Button x:Name="BtnTdp" Style="{StaticResource PanelBtn}" Focusable="False"/>
+        <Button x:Name="BtnProf" Style="{StaticResource PanelBtn}" Focusable="False"/>
+        <Button x:Name="BtnBoost" Style="{StaticResource PanelBtn}" Focusable="False"/>
+        <Button x:Name="BtnHub" Style="{StaticResource PanelBtn}" Focusable="False" Content="⌂  Voltar à AllyHub"/>
+        <Button x:Name="BtnClose" Style="{StaticResource PanelBtn}" Focusable="False" Content="✕  Fechar menu"/>
+      </StackPanel>
+    </DockPanel>
+  </Border>
+</Window>
