@@ -1,7 +1,7 @@
 <Window x:Class="AllyHub.QuickMenu"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="AllyHub — Menu rápido" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Icon="icon.ico" Title="AllyHub — Menu rápido" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize" Width="440"
         Foreground="White" FontFamily="{StaticResource Display}">
   <Border x:Name="Card" Background="#F50E0F14" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="3,0,0,0" Padding="28,30">

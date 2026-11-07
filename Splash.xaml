@@ -1,7 +1,7 @@
 <Window x:Class="AllyHub.Splash"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="AllyHub" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize"
+        Icon="icon.ico" Title="AllyHub" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize"
         WindowState="Maximized" Background="#07080B" Topmost="True" Opacity="0"
         Foreground="White" FontFamily="{StaticResource Display}">
   <Grid>
