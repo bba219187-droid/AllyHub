@@ -10,24 +10,10 @@ NOVIDADES
 - Atualizacoes automaticas a partir do GitHub.
 
 
-PASSO 1 - POR O CODIGO NO GITHUB (uma vez so)
----------------------------------------------
-1. Cria um repositorio PUBLICO chamado AllyHub no github.com
-   (tem de ser publico para o Ally conseguir ver os releases sem password).
-2. Abre System.cs e muda esta linha para o teu utilizador:
-       public const string Repo = "bba219187-droid/AllyHub";
-3. Na pasta AllyHub, num terminal:
-       git init
-       git add .
-       git commit -m "AllyHub v1.0.0"
-       git branch -M main
-       git remote add origin https://github.com/bba219187-droid/AllyHub.git
-       git push -u origin main
-       git tag v1.0.0
-       git push origin v1.0.0
-4. No GitHub, abre o separador "Actions" e espera uns 3 minutos.
-   O AllyHub.exe aparece em "Releases". O GitHub compila-o por ti, por isso
-   ja nao precisas do .NET instalado.
+PASSO 1 - GITHUB (ja esta feito)
+--------------------------------
+Repositorio: https://github.com/bba219187-droid/AllyHub
+Cada push para main compila o AllyHub.exe e publica-o em "Releases".
 
 
 PASSO 2 - INSTALAR NO ALLY (uma vez so)
@@ -45,11 +31,9 @@ PASSO 2 - INSTALAR NO ALLY (uma vez so)
 
 COMO LANCAR UMA ATUALIZACAO
 ---------------------------
-Mudas o codigo e depois:
-    git commit -am "o que mudaste"
-    git push
-    git tag v1.0.1          (o numero tem de ser sempre maior)
-    git push origin v1.0.1
+1. Muda o codigo.
+2. Em AllyHub.csproj sobe o numero em <Version> (ex.: 1.0.0 -> 1.0.1).
+3. git commit -am "o que mudaste"  e  git push
 Da proxima vez que o Ally abrir a AllyHub, ela descarrega a versao nova,
 substitui-se e reinicia sozinha.
 
