@@ -11,6 +11,7 @@
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <AssemblyName>AllyHub</AssemblyName>
     <Version>1.0.0</Version>
   </PropertyGroup>
